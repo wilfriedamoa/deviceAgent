@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+option csharp_namespace = "deviceAgent.services.grpc";
+
+//package kiosk;
+
+// -------------------------------------------------------------------
+// 1. SERVICE IMPRESSION & DISTRIBUTION
+// -------------------------------------------------------------------
+service PrinterGrpc {
+  rpc IssuePersonalizedCard (IssueCardRequest) returns (CardIssuanceResponse);
+  rpc GetPrinterStatus (EmptyRequest) returns (PrinterStatusResponse);
+}
+
+// -------------------------------------------------------------------
+// 2. SERVICE DIAGNOSTIC & SANTE
+// -------------------------------------------------------------------
+service HealthGrpc {
+  rpc CheckHealth (EmptyRequest) returns (HealthReportResponse);
+}
+
+// -------------------------------------------------------------------
+// MESSAGES DE REQUETE ET REPONSE
+// -------------------------------------------------------------------
+message EmptyRequest {}
+
+// -------------------------------------------------------------------
+// ENUMÉRATIONS DE CONFIGURATION
+// -------------------------------------------------------------------
+
+// Modes d'encodage matériels gérés par le driver Evolis
+enum EncodingModeDto {
+  ENCODING_NONE = 0;
+  ENCODING_MAGNETIC = 1;          // Mode 1 : Pistes magnétiques ISO1, ISO2, ISO3
+  ENCODING_SMART_CONTACT = 2;      // Mode 2 : Puce à contact (ISO 7816 / Station Sic)
+  ENCODING_SMART_CONTACTLESS = 3;  // Mode 3 : Puce sans contact (RFID / NFC / Station Srf)
+  ENCODING_DUAL_CHIP = 4;         // Hybride : Puce Contact + Puce Sans Contact
+}
+
+// Type de puce cible pour les APDUs PC/SC
+enum ChipTypeDto {
+  CHIP_DESFIRE_EV = 0;   // MIFARE DESFire (EV1/EV2/EV3)
+  CHIP_ISO7816_NATIVE = 1; // Native / JavaCard / EMV
+}
+
+// -------------------------------------------------------------------
+// STRUCTURES DES DONNÉES DU TITULAIRE & ENCODAGE
+// -------------------------------------------------------------------
+
+// Contient les 3 pistes magnétiques ISO (Format ASCII selon spécifications Evolis)
+message MagneticTracksDto {
+  string track1 = 1; // ISO1 Alphanumérique (Max 79 caractères)
+  string track2 = 2; // ISO2 Numérique (Max 40 caractères)
+  string track3 = 3; // ISO3 Numérique (Max 107 caractères)
+}
+
+// Données complètes transmises par le CMS pour la personnalisation
+message CardHolderDataDto {
+  string card_number = 1;                // N° de carte imprimé sur le visuel
+  string first_name = 2;                 // Prénom du titulaire
+  string last_name = 3;                  // Nom du titulaire
+  string expiry_date = 4;                // Date d'expiration (ex: "12/28")
+  string pin_code = 5;                   // Code PIN obligatoire à 4 chiffres
+  EncodingModeDto encoding_mode = 6;     // Sélection des modes d'encodage (Mag, Contact, RFID, Dual)
+  MagneticTracksDto magnetic_tracks = 7; // Requis si mode MAGNETIC ou DUAL
+  string chip_data_payload = 8;          // Payload binaire/JSON écrit dans la mémoire de la puce
+}
+
+// -------------------------------------------------------------------
+// MESSAGES DE REQUÊTES ET RÉPONSES
+// -------------------------------------------------------------------
+
+message IssueCardRequest {
+  int64 transaction_id = 1;      // Identifiant de transaction unique
+  CardHolderDataDto card_data = 2; // Données titulaire et d'encodage
+  ChipTypeDto chip_type = 3;      // Architecture de la puce à encoder
+}
+
+message CardIssuanceResponse {
+  bool success = 1;       // true si l'émission complète a réussi
+  string chip_uid = 2;    // UID de la puce lu lors de l'encodage (Hexadecimal)
+  string error_code = 3;  // Code d'erreur métier ou matériel (ex: "NO_STOCK", "MAG_ENCODING_FAILED")
+  string message = 4;     // Description détaillée du résultat
+}
+
+message PrinterStatusResponse {
+  string status = 1;   // Ex: "READY", "OFFLINE", "OUT_OF_PAPER", "JAMMED"
+  string message = 2;  // Détails explicatifs du statut
+}
+
+message ComponentHealthDto {
+  string component_name = 1;
+  bool is_connected = 2;
+  string level = 3; // OK, WARNING, CRITICAL
+  string details = 4;
+}
+
+message HealthReportResponse {
+  string global_health = 1;
+  double cpu_usage_percent = 2;
+  double ram_usage_mb = 3;
+  double disk_free_space_gb = 4;
+  repeated ComponentHealthDto components = 5;
+  string timestamp = 6;
+}
