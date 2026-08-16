@@ -26,7 +26,7 @@ namespace deviceAgent.services
         public async Task<CardIssuanceResult> ProcessCardDispenseAsync(
         long transactionId,
         CardHolderData cardData,
-        ChipType chipType = ChipType.DesfireEV,
+        ChipType chipType = ChipType.Iso7816Native,
         CancellationToken ct = default)
         {
             _logger.LogInformation("Début du traitement de distribution de carte pour la transaction {TxId}", transactionId);

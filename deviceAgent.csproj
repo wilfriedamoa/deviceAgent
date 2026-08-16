@@ -23,4 +23,8 @@
     <PackageReference Include="System.Drawing.Common" Version="10.0.10" />
     <ProtoBuf Include="proto\deviceAgent.proto" GrpcServices="Server" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="pattern\" />
+  </ItemGroup>
 </Project>

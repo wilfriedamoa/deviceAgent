@@ -24,7 +24,7 @@ namespace deviceAgent.services
         [SupportedOSPlatform("windows6.1")]
         public async Task<CardIssuanceResult> IssuePersonalizedCardAsync(
         CardHolderData cardData,
-        ChipType chipType = ChipType.DesfireEV,
+        ChipType chipType=ChipType.Iso7816Native,
         CancellationToken ct = default)
     {
         _logger.LogInformation("Demande d'émission de carte reçue pour : {FirstName} {LastName} [Modes: {Mode}]", 
