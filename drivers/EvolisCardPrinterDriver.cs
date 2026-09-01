@@ -63,7 +63,7 @@ namespace deviceAgent.drivers
         /// <summary>
         /// Workflow complet : Insertion -> Encodage (Mag / Contact / Contactless) -> PIN -> Impression Visuelle -> Éjection / Rejet.
         /// </summary>
-        [SupportedOSPlatform("windows6.1")]
+        
         public async Task<CardIssuanceResult> IssuePersonalizedCardAsync(
             CardHolderData cardData,
             ChipType chipType = ChipType.DesfireEV,
@@ -418,7 +418,7 @@ namespace deviceAgent.drivers
         /// <summary>
         /// Génère le visuel textuel (Nom, Prénom, N° Carte, Expiration) et l'envoie à l'imprimante Evolis.
         /// </summary>
-        [SupportedOSPlatform("windows6.1")]
+        
         private async Task<bool> PrintCardVisualAsync(CardHolderData data, CancellationToken ct)
         {
             try

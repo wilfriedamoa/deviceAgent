@@ -21,7 +21,7 @@ namespace deviceAgent.services
         /// <summary>
         /// Traite l'émission personnalisée de la carte (Encodage Pistes, Encodage Puce, PIN, Visuel Titulaire).
         /// </summary>
-        [SupportedOSPlatform("windows6.1")]
+      
         public async Task<CardIssuanceResult> IssuePersonalizedCardAsync(
         CardHolderData cardData,
         ChipType chipType=ChipType.Iso7816Native,

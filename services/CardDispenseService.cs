@@ -13,7 +13,7 @@ namespace deviceAgent.services
         CardInventoryRepo cardInventoryRepo,
         AuditLogRepo auditLogRepo,
         IPrinterService printerService,
-        CardJobRepo cardJobRepo):ICardDispenserService
+        CardJobRepo cardJobRepo,ReceiptPrinterService receiptPrinterService):ICardDispenserService
 
     {
         private readonly CardInventoryRepo _inventoryRepo=cardInventoryRepo;
@@ -21,6 +21,7 @@ namespace deviceAgent.services
         private readonly IPrinterService _printerService=printerService;
         private readonly AuditLogRepo _auditRepo = auditLogRepo;
         private readonly ILogger<CardDispenseService> _logger=logger;
+        private readonly ReceiptPrinterService _receiptPrinterService = receiptPrinterService;
 
 
         public async Task<CardIssuanceResult> ProcessCardDispenseAsync(
@@ -78,7 +79,15 @@ namespace deviceAgent.services
 
                 await _auditRepo.LogAsync("CardDispenser", "DISPENSE", "SUCCESS", $"JobId: {job.Id}, TxId: {transactionId}, ChipUid: {result.ChipUid}", ct);
                 _logger.LogInformation("Distribution réussie pour le Job N°{JobId} [ChipUid: {ChipUid}]", job.Id, result.ChipUid);
-
+                // 5. Impression du reçu de distribution
+                ReceiptData receiptData = new
+                (
+                    CustomerName: $"{cardData.FirstName} {cardData.LastName}",
+                    CardNumber: cardData.CardNumber,
+                    ExpirationDate : cardData.ExpiryDate,
+                    TransactionId : transactionId.ToString()
+                );
+                bool receiptPrinted = await _receiptPrinterService.PrintReceiptAsync(receiptData,"custom");
                 return result;
             }
             catch (Exception ex)
